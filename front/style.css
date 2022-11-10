@@ -1,0 +1,12 @@
+#messages{
+    height:300px;
+    overflow-y: scroll;
+}
+
+#displayed_username{
+    color: red;
+}
+
+#app {
+    margin-top: 2rem;
+}
