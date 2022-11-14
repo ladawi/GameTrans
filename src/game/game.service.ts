@@ -2,53 +2,49 @@ import { Injectable } from '@nestjs/common';
 
 import { Position, Dimension } from './game_interface';
 
+import { Sprite, paddle } from './gameClass';
+
 @Injectable()
 export class GameService 
 {
-	init_position: Position = 
-	{
-		x: 200,
-		y: 200
-	}
 	game_data =
 	{
-		step:  10,
 		canvas:
 		{
 			width: 640,
 			height: 480
 		},
-		square:
-		{
-			width: 20,
-			height: 20
-		}
+		paddle1 : new paddle({
+			position: {
+				x: 20,
+				y: 200,
+			},
+			velocity: {
+				x: 0,
+				y: 0,
+			},
+			width: 30,
+			height: 80,
+			canvasDim: {
+				width: 640,
+				height: 480
+			}
+		})
 	}
-	
 
-	setSquarePosition(position: Position , instruction: string): Position
-	{
+	movementPaddle1(paddle: paddle, instruction: string) {
 		switch (instruction) {
 			case "up":
-				if (position.y >  0 )
-					position.y -= this.game_data.step;
-				break;
+    		console.log("issoi");
+			this.game_data.paddle1.velocity.y = -5;
+			this.game_data.paddle1.move();
+					break;
 			case "down":
-				if (position.y + this.game_data.square.height + this.game_data.step < this.game_data.canvas.height)
-					position.y += this.game_data.step;
-				break;
-			case "left":
-				if (position.x >  0 )
-					position.x -= this.game_data.step;
-				break;
-			case "right":
-				if (position.x+ this.game_data.square.width + this.game_data.step < this.game_data.canvas.width)
-					position.x += this.game_data.step;
-				break;
-			default:
-				break;
+    			console.log("issoi2");
+				this.game_data.paddle1.velocity.y = 5;
+				this.game_data.paddle1.move();
+					break;
 		}
-		return position;
 	}
 
 }

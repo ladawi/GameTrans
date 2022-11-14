@@ -12,6 +12,7 @@ import { Socket, Server } from 'socket.io';
 
 import { Position } from './game_interface';
 import { GameService } from './game.service';
+import { Sprite } from './gameClass';
 
 @WebSocketGateway({
 	cors: {
@@ -28,25 +29,29 @@ export class GameGateway
 	private logger: Logger = new Logger('GameGateway');
 
 	// SQUARE WS
-	position: Position = 
+
+	@SubscribeMessage('MovePaddle1ToServer')
+	async handlePaddle1(client: Socket, instruction : string): Promise<void>
 	{
-		x: this.gameService.init_position.x,
-		y: this.gameService.init_position.y
+		console.log("handlePaddle1");
+		this.gameService.movementPaddle1(this.gameService.game_data.paddle1, instruction);
+		this.server.emit(`paddle1ToClient`, this.gameService.game_data);
+
 	}
-	
-	@SubscribeMessage('positionToServer')
-	async handlePosition(client: Socket, instruction : string): Promise<void>
+
+	@SubscribeMessage('getPaddle1ToServer')
+	async GetPaddle1(client: Socket): Promise<void>
 	{
-		this.position = this.gameService.setSquarePosition(this.position, instruction);
-		this.server.emit(`positionToClient`, this.position);
+		// console.log("getPaddle1ToServer");
+		this.server.emit(`getPaddle1ToClient`, this.gameService.game_data.paddle1);
+
 	}
 
 	handleConnection(client: Socket, ...args: any[])
 	{
 		this.server.emit(`gameData`, this.gameService.game_data);
 		this.logger.log(this.gameService.game_data);
-		this.server.emit(`positionToClient`, this.position);
-		this.logger.log(this.position);
+		this.server.emit(`positionToClient`, this.gameService.game_data);
 	}
 
 	afterInit(server: Server)
