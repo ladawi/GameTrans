@@ -43,7 +43,7 @@ export class GameGateway
 	async GetPaddle1(client: Socket): Promise<void>
 	{
 		// console.log("getPaddle1ToServer");
-		this.server.emit(`getPaddle1ToClient`, this.gameService.game_data.paddle1);
+		this.server.emit(`getPaddle1ToClient`, this.gameService.game_data);
 
 	}
 

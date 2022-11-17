@@ -89,7 +89,7 @@ class Sprite {
 class paddle extends Sprite {
 	constructor({
 	position,
-	velocity,
+	velocity = { x: 0, y: 0 },
 	imageSrc,
 	GoalSoundSrc,
 	scale = { x: 1, y: 1 },
@@ -148,3 +148,96 @@ class paddle extends Sprite {
 		this.speed = 9;
 	}
 }
+
+class ball extends Sprite {
+	constructor({
+	  position,
+	  velocity,
+	  imageSrc,
+	  scale = { x: 1, y: 1 },
+	  framesMax = 1,
+	  offset = { x: 0, y: 0 },
+	  width,
+	  height,
+	  speed,
+	}) {
+	  super({
+		position,
+		imageSrc,
+		scale,
+		framesMax,
+		offset,
+		width,
+		height,
+	  });
+	  this.width = width;
+	  this.height = height;
+	  this.velocity = velocity;
+	  this.framesCurrent = 0;
+	  this.framesElapsed = 0;
+	  this.framesHold = 5;
+	  this.radius = this.height / 2;
+	  this.speed = speed;
+	}
+  
+	collision(paddle) {
+	  this.getCoord();
+	  paddle.getCoord();
+	  return (
+		this.coord.right > paddle.coord.left &&
+		this.coord.top < paddle.coord.bottom &&
+		this.coord.left < paddle.coord.right &&
+		this.coord.bottom > paddle.coord.top
+	  );
+	}
+	reset() {
+	  this.position.x = (canvas.width - 40) / 2;
+	  this.position.y = (canvas.height - 40) / 2;
+	  this.speed = 5;
+	  this.velocity.y = 0;
+	}
+  
+	update(paddle1, paddle2, ctx) {
+	  this.draw(ctx);
+	  if (this.velocity.x !== 0 || this.velocity.y !== 0) this.animateFrames();
+	  this.position.x += this.velocity.x;
+	  this.position.y += this.velocity.y;
+	  if (
+		this.position.y + this.height > background.coord.bottom ||
+		this.position.y < 0
+	  ) {
+		this.velocity.y = -this.velocity.y;
+	  }
+  
+	  let paddle =
+		this.coord.center.x < background.coord.center.x ? paddle1 : paddle2;
+  
+	  if (this.collision(paddle)) {
+		let collidePoint =
+		  (this.coord.center.y - paddle.coord.center.y) / (paddle.height / 2);
+		let angleRad = (Math.PI / 8) * collidePoint;
+  
+		let direction = this.coord.center.x < background.coord.center.x ? 1 : -1;
+  
+		this.velocity.x = this.speed * Math.cos(angleRad) * direction;
+		this.velocity.y = this.speed * Math.sin(angleRad);
+  
+		this.speed += 0.5;
+		paddle1.speed += 0.25;
+		paddle2.speed += 0.25;
+	  }
+	  if (ballon.coord.left <= background.coord.left) {
+		if (gameState === "On") {
+		  score_2++;
+		  document.querySelector("#score_2").innerHTML = score_2;
+		  Goal(this, paddle2, paddle1);
+		}
+	  } else if (ballon.coord.right >= background.coord.right) {
+		if (gameState === "On") {
+		  score_1++;
+		  document.querySelector("#score_1").innerHTML = score_1;
+		  Goal(this, paddle1, paddle2);
+		}
+	  }
+	}
+  }

@@ -12,6 +12,7 @@ const app = new Vue({
 			background: {},
 			paddle1: {},
 			paddle2: {},
+			ball: {},
 
 			then: {},
 			now: {},
@@ -49,6 +50,7 @@ const app = new Vue({
 				this.background.draw(this.context);
 				this.paddle1.draw(this.context);
 				this.paddle2.draw(this.context);
+				this.ball.draw(this.context);
 				console.log('YEP', this.fpsInterval);
 			}
 		},
@@ -73,10 +75,10 @@ const app = new Vue({
 		window.addEventListener('keydown', (e) => {
 
 			switch (e.key) {
-				case "ArrowUp":
+				case "w":
 					this.sendPaddle1Move("up");
 					break;
-				case "ArrowDown":
+				case "s":
 					this.sendPaddle1Move("down");
 					break;
 				case "ArrowLeft":
@@ -105,12 +107,21 @@ const app = new Vue({
 		});
 		this.socket.on(`getPaddle1ToClient`, (data) => {
 
-			this.paddle1.position = data.position;
-			this.paddle1.velocity = data.velocity;
-			this.paddle1.width = data.width;
-			this.paddle1.height = data.height;
-			this.paddle1.speed = data.speed;
+			this.paddle1.position = data.paddle1.position;
+			this.paddle1.velocity = data.paddle1.velocity;
+			this.paddle1.width = data.paddle1.width;
+			this.paddle1.height = data.paddle1.height;
+			this.paddle1.speed = data.paddle1.speed;
 			this.paddle1.updateScale();
+
+//			 ------------------
+
+			this.paddle2.position = data.paddle2.position;
+			this.paddle2.velocity = data.paddle2.velocity;
+			this.paddle2.width = data.paddle2.width;
+			this.paddle2.height = data.paddle2.height;
+			this.paddle2.speed = data.paddle2.speed;
+			this.paddle2.updateScale();
 
 		});
 
@@ -164,6 +175,27 @@ const app = new Vue({
 			canvas : this.board
 		});
 		
+		this.ball = new ball({
+			position: {
+			  x: (this.board.width - parseInt(this.board.height / 19.2, 10)) / 2,
+			  y: (this.board.height - parseInt(this.board.height / 19.2, 10)) / 2,
+			},
+			velocity: {
+			  x: 0,
+			  y: 0,
+			},
+			coord: {
+			  top: 0,
+			  left: 0,
+			  right: 0,
+			  bottom: 0,
+			},
+			width: parseInt(this.board.height / 19.2, 10),
+			height: parseInt(this.board.height / 19.2, 10),
+			imageSrc: "./assets/Balls.png",
+			speed: 4,
+			framesMax: 10,
+		  });
 
 
 		this.startAnimating(30);
