@@ -24,7 +24,7 @@ export class GameService
 				y: 0,
 			},
 			width: 30,
-			height: 80,
+			height: 160,
 			canvasDim: {
 				width: 640,
 				height: 480

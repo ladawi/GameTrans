@@ -79,6 +79,11 @@ class Sprite {
 	  this.draw(ctx);
 	  this.animateFrames();
 	}
+
+	updateScale() {
+		this.scale.x = (this.width / this.image.width) * this.framesMax;
+		this.scale.y = this.height / this.image.height;
+	}
   }
 
 class paddle extends Sprite {

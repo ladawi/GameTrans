@@ -26,6 +26,9 @@ const app = new Vue({
 			this.fpsInterval = 1000 / fps;
 			this.then = Date.now();
 			this.startTime = this.then;
+
+			this.paddle1.updateScale();
+
 			this.game();
 		},
 		game() {
@@ -85,6 +88,7 @@ const app = new Vue({
 				case " ":
 						console.log(this.paddle1.position.x);
 						console.log(this.paddle1.position.y);
+						this.paddle1.updateScale();
 					break;
 			}
 			
@@ -106,6 +110,8 @@ const app = new Vue({
 			this.paddle1.width = data.width;
 			this.paddle1.height = data.height;
 			this.paddle1.speed = data.speed;
+			this.paddle1.updateScale();
+
 		});
 
 
@@ -128,9 +134,11 @@ const app = new Vue({
 				x: 0,
 				y: 0,
 			},
-			width: parseInt(this.board.width / 34, 10),
+			// width: parseInt(this.board.width / 34, 10),
 			// height: parseInt(this.board.height / 3.5, 10),
-			height: 80,
+
+			width: 123,
+			height:345,
 			imageSrc: "./assets/Paddle1.png",
 			GoalSoundSrc: "./assets/Siuu.mp3",
 			GoalAnimSrc: "./assets/nyancat-removebg-preview.png",
@@ -155,6 +163,9 @@ const app = new Vue({
 			GoalAnimFrame: 6,
 			canvas : this.board
 		});
+		
+
+
 		this.startAnimating(30);
 	},
 })
