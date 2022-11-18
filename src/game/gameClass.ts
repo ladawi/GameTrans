@@ -91,14 +91,12 @@ export class paddle extends Sprite {
 }
 
 
-class ball extends Sprite {
+export class ball extends Sprite {
 	public width: any;
 	public height: any;
 	public velocity: any;
 	public radius: any;
 	public speed: any;
-	public getCoord: any;
-	public coord: any;
 	public position: any;
 	public draw: any;
 
@@ -108,11 +106,13 @@ class ball extends Sprite {
 	  width,
 	  height,
 	  speed,
+	  canvasDim,
 	}) {
 	  super({
 		position,
 		width,
 		height,
+		canvasDim,
 	  });
 	  this.width = width;
 	  this.height = height;
@@ -122,6 +122,8 @@ class ball extends Sprite {
 	}
   
 	collision(paddle) {
+	//   console.log(this.coord, "this.coord");
+	//   console.log(paddle.coord, "paddle.coord");
 	  this.getCoord();
 	  paddle.getCoord();
 	  return (
@@ -138,45 +140,43 @@ class ball extends Sprite {
 	  this.velocity.y = 0;
 	}
   
-	update(paddle1, paddle2, ctx) {
+	update(paddle1, paddle2) {
 	  // this.draw(ctx);
-	  if (this.velocity.x !== 0 || this.velocity.y !== 0) this.animateFrames();
+	//   if (this.velocity.x !== 0 || this.velocity.y !== 0) this.animateFrames();
 	  this.position.x += this.velocity.x;
 	  this.position.y += this.velocity.y;
 	  if (
-		this.position.y + this.height > background.coord.bottom ||
+		this.position.y + this.height > this.canvasDim.width ||
 		this.position.y < 0
 	  ) {
 		this.velocity.y = -this.velocity.y;
 	  }
   
 	  let paddle =
-		this.coord.center.x < background.coord.center.x ? paddle1 : paddle2;
+		this.position.x < (this.canvasDim.width / 2) ? paddle1 : paddle2;
   
+		// console.log(this.canvasDim.width, "paddle pos");
 	  if (this.collision(paddle)) {
 		let collidePoint =
 		  (this.coord.center.y - paddle.coord.center.y) / (paddle.height / 2);
 		let angleRad = (Math.PI / 8) * collidePoint;
   
-		let direction = this.coord.center.x < background.coord.center.x ? 1 : -1;
+		let direction = this.coord.center.x < (this.canvasDim.width / 2) ? 1 : -1;
   
 		this.velocity.x = this.speed * Math.cos(angleRad) * direction;
 		this.velocity.y = this.speed * Math.sin(angleRad);
   
 		this.speed += 0.5;
 	  }
-	  // if (this.coord.left <= background.coord.left) {
-		// if (gameState === "On") {
-		//   score_2++;
-		//   // document.querySelector("#score_2").innerHTML = score_2;
-		//   Goal(this, paddle2, paddle1);
-		// }
-	  // } else if (this.coord.right >= background.coord.right) {
-		// if (gameState === "On") {
-		//   score_1++;
-		//   // document.querySelector("#score_1").innerHTML = score_1;
-		//   Goal(this, paddle1, paddle2);
-		// }
-	  // }
+	  // IF GOAL -->
+	  if (this.coord.left <= 0) {
+
+		this.reset();
+		console.log("j1 g");
+	  } else if (this.coord.right >= this.canvasDim.width) {
+
+		this.reset();
+		console.log("j2 g");
+	  }
 	}
   }

@@ -51,7 +51,7 @@ const app = new Vue({
 				this.paddle1.draw(this.context);
 				this.paddle2.draw(this.context);
 				this.ball.draw(this.context);
-				console.log('YEP', this.fpsInterval);
+				// console.log('YEP', this.fpsInterval);
 			}
 		},
 		sendInstruction(instruction)
@@ -122,6 +122,15 @@ const app = new Vue({
 			this.paddle2.height = data.paddle2.height;
 			this.paddle2.speed = data.paddle2.speed;
 			this.paddle2.updateScale();
+
+//			 ------------------
+
+			this.ball.position = data.ball.position;
+			this.ball.velocity = data.ball.velocity;
+			this.ball.width = data.ball.width;
+			this.ball.height = data.ball.height;
+			this.ball.speed = data.ball.speed;
+			this.ball.updateScale();
 
 		});
 
