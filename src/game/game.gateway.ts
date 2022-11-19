@@ -68,12 +68,11 @@ export class GameGateway
 		else
 		{
 			client.emit('gameOver');
+			clearInterval(intervalID);
 			// console.log("client.emit('gameOver')");
 		}
 	}, 1000 / 60);
-
 	}
 
-	runGame() {
-	}
+	
 }
