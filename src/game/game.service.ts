@@ -10,6 +10,11 @@ export class GameService
 	game_data =
 	{
 		gameState: 'off',
+		score:
+		{
+			player1: 0,
+			player2: 0,
+		},
 		canvas:
 		{
 			width: 640,
@@ -50,7 +55,7 @@ export class GameService
 				x: 5,
 				y: 0
 			},
-			speed: 0,
+			speed: 3,
 			canvasDim: {
 				width: 640,
 				height: 480
@@ -58,23 +63,39 @@ export class GameService
 		}),
 	}
 
-	movementPaddle1(paddle: paddle, instruction: string) {
+	movementPaddle(paddle: paddle, instruction: string) {
 		switch (instruction) {
 			case "up":
-			this.game_data.paddle1.velocity.y = -10;
+				paddle.velocity.y = -20;
 			// this.game_data.paddle1.move();
 					break;
 			case "down":
-				this.game_data.paddle1.velocity.y = 10;
+				paddle.velocity.y = 20;
 				// this.game_data.paddle1.move();
 					break;
 		}
 	}
 
+
 	gameLoop(state) {
+		let ret;
 		// console.log(this.game_data.ball.position);
-		this.game_data.paddle1.update();
-		this.game_data.paddle2.update();
-		this.game_data.ball.update(this.game_data.paddle1, this.game_data.paddle2);
+		// this.game_data.paddle1.update();
+		state.game_data.paddle1.update();
+		state.game_data.paddle2.update();
+		ret = state.game_data.ball.update(state.game_data.paddle1, state.game_data.paddle2);
+		if (ret === 1){
+			state.game_data.score.player1+= 1;
+			ret = 0;
+		} else if (ret === 2) {
+			state.game_data.score.player2+= 1;
+			ret = 0;
+		}
+		if (state.game_data.score.player1 > 2) {
+			return (1);
+		} else if (state.game_data.score.player2 > 2) {
+			return (2);
+		}
+		// console.log(this.game_data.score);
 	}
 }

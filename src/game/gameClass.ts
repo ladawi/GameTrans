@@ -86,7 +86,7 @@ export class paddle extends Sprite {
     )
       this.position.y += this.velocity.y;
 
-    this.velocity.y = 0;
+    // this.velocity.y = 0;
   }
 }
 
@@ -146,7 +146,7 @@ export class ball extends Sprite {
 	  this.position.x += this.velocity.x;
 	  this.position.y += this.velocity.y;
 	  if (
-		this.position.y + this.height > this.canvasDim.width ||
+		this.position.y + this.height > this.canvasDim.height ||
 		this.position.y < 0
 	  ) {
 		this.velocity.y = -this.velocity.y;
@@ -166,17 +166,38 @@ export class ball extends Sprite {
 		this.velocity.x = this.speed * Math.cos(angleRad) * direction;
 		this.velocity.y = this.speed * Math.sin(angleRad);
   
-		this.speed += 0.5;
+		this.speed += 0.1;
 	  }
 	  // IF GOAL -->
 	  if (this.coord.left <= 0) {
 
-		this.reset();
-		console.log("j1 g");
-	  } else if (this.coord.right >= this.canvasDim.width) {
+		this.velocity.x = 0;
+		this.velocity.y = 0;
 
 		this.reset();
-		console.log("j2 g");
+
+		setTimeout(() => {
+			this.velocity.x = -5;
+		}, 3000);
+
+		// console.log("j1 g");
+		return (1);
+	  } else if (this.coord.right >= this.canvasDim.width) {
+
+			this.velocity.x = 0;
+			this.velocity.y = 0;
+	
+			this.reset();
+	
+			setTimeout(() => {
+				this.velocity.x = 5;
+			}, 3000);
+			this.reset();
+		// console.log("j2 g");
+		return (2);
+
 	  }
+		return (0);
+
 	}
   }
