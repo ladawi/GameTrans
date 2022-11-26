@@ -15,6 +15,11 @@ export class GameService
 			player1: 0,
 			player2: 0,
 		},
+		idPlayers:
+		{
+			player1: 0,
+			player2: 0,
+		},
 		canvas:
 		{
 			width: 640,

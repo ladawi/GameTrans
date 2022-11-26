@@ -36,21 +36,19 @@ export class GameGateway
 	io = require('socket.io')();
 	// -----------
 
-	@SubscribeMessage('MovePaddle1ToServer')
-	async handlePaddle1(client: Socket, instruction : string): Promise<void>
+	@SubscribeMessage('MovePaddleToServer')
+	async handlePaddle(client: Socket, instruction : string): Promise<void>
 	{
-		if (this.state[this.clientRooms[client.id]]){
-			this.state[this.clientRooms[client.id]].movementPaddle(this.state[this.clientRooms[client.id]].game_data.paddle1, instruction);
-			this.server.emit(`paddle1ToClient`, this.state[this.clientRooms[client.id]].game_data);
-		}
-	}
-
-	@SubscribeMessage('MovePaddle2ToServer')
-	async handlePaddle2(client: Socket, instruction : string): Promise<void>
-	{
-		if (this.state[this.clientRooms[client.id]]){
-			this.state[this.clientRooms[client.id]].movementPaddle(this.state[this.clientRooms[client.id]].game_data.paddle2, instruction);
-			this.server.emit(`paddle2ToClient`, this.state[this.clientRooms[client.id]].game_data);
+		if (client.id === this.state[this.clientRooms[client.id]].game_data.idPlayers.player1) {
+			if (this.state[this.clientRooms[client.id]]){
+				this.state[this.clientRooms[client.id]].movementPaddle(this.state[this.clientRooms[client.id]].game_data.paddle1, instruction);
+				this.server.to(this.clientRooms[client.id]).emit(`paddle1ToClient`, this.state[this.clientRooms[client.id]].game_data);
+			}
+		} else if (client.id === this.state[this.clientRooms[client.id]].game_data.idPlayers.player2) {
+			if (this.state[this.clientRooms[client.id]]){
+				this.state[this.clientRooms[client.id]].movementPaddle(this.state[this.clientRooms[client.id]].game_data.paddle2, instruction);
+				this.server.to(this.clientRooms[client.id]).emit(`paddle2ToClient`, this.state[this.clientRooms[client.id]].game_data);
+			}
 		}
 	}
 
@@ -58,8 +56,8 @@ export class GameGateway
 	async GetInfos(client: Socket): Promise<void>
 	{
 		if (this.state[this.clientRooms[client.id]]) {
-			console.log(client.id , this.state[this.clientRooms[client.id]].game_data.paddle1.position);
-			this.server.emit(`getInfoToClient`, this.state[this.clientRooms[client.id]].game_data);
+		console.log(client.id , this.state[this.clientRooms[client.id]].game_data.paddle1.position);
+			this.server.to(this.clientRooms[client.id]).emit(`getInfoToClient`, this.state[this.clientRooms[client.id]].game_data);
 		}
 	}
 
@@ -73,19 +71,17 @@ export class GameGateway
 
 		this.state[roomName] = new GameService;
 
+		this.state[roomName].game_data.idPlayers.player1 = client.id;
 		client.join(roomName);
 		console.log('client.rooms.size', client.rooms);
 		client.emit('init', 1);
-		setTimeout(() => {
-			this.startGameInterval(client, this.state[roomName]);
-		}, 500);
 	}
 
 	@SubscribeMessage('getSizeToServer')
 	async GetSize(client: Socket): Promise<void>
 	{
 		if (this.state[this.clientRooms[client.id]]) {
-			this.server.emit(`getSizeToClient`, this.state[this.clientRooms[client.id]].game_data);
+			this.server.to(this.clientRooms[client.id]).emit(`getSizeToClient`, this.state[this.clientRooms[client.id]].game_data);
 		console.log(this.clientRooms[client.id])
 		}
 	}
@@ -93,34 +89,48 @@ export class GameGateway
 	@SubscribeMessage('joinGame')
 	async handleJoinGame(client: Socket, gameCode: string): Promise<void>
 	{
-		console.log('handleJoinGame', client.rooms.size);
-		// const room = io.sockets.adapter.room[gameCode];
-		// console.log("-------------> ");
-
-		// let allUsers;
-		// if (room) {
-		// 	allUsers = room.sockets;
-		// }
-
-		// let numClients = 0;
-		// if (allUsers) {
-		// 	numClients = Object.keys(allUsers).length;
-		// }
-
-		// if (numClients === 0) {
-		// 	client.emit('unknownGame'); 
-		// 	return;
-		// } else if (numClients > 1) {
-		// 	client.emit('tooManyPlayers');
-		// 	return;
-		// }
-		// this.clientRooms[client.id] = gameCode;
-		client.emit('gameCode', gameCode);
-
+		// if game doesn't exist 
+		if (!this.state[gameCode]) {
+			client.emit('unknownGame');
+			return;
+		}
+		// if game is full
+		if (this.state[gameCode].game_data.idPlayers.player2 &&
+			this.state[gameCode].game_data.idPlayers.player2 != client.id) {
+			client.emit('fullGame');
+			return;
+		}
+		this.clientRooms[client.id] = gameCode;
 		client.join(gameCode);
-		// client.emit('init', 1);
-		// client.emit('init', 2);
-		// this.startGameInterval(client, this.gameService);
+		this.state[gameCode].game_data.idPlayers.player2 = client.id;
+
+		client.emit('gameCode', gameCode);
+		client.emit('init', 1);
+		setTimeout(() => {
+			this.startGameInterval(client, this.state[gameCode], gameCode);
+		}, 500);
+	}
+
+	@SubscribeMessage('specGame')
+	async handleSpecGame(client: Socket, gameCode: string): Promise<void>
+	{
+		// console.log("gameCode", gameCode);
+		if (!this.state[gameCode]) {
+			client.emit('unknownGame');
+			return;
+		}
+		this.clientRooms[client.id] = gameCode;
+		client.join(gameCode);
+		client.emit('gameCode', gameCode);
+		client.emit('init', 1);
+	}
+
+	@SubscribeMessage('findGame')
+	async handleFindGame(client: Socket): Promise<void>
+	{
+		let code = "";
+		console.log(this.clientRooms);
+		console.log("hello");
 	}
 
 	handleConnection(client: Socket, ...args: any[])
@@ -134,16 +144,18 @@ export class GameGateway
 	{
 	}
 
-	startGameInterval(client, state) {
+	startGameInterval(client, state, gameCode) {
 		const intervalID = setInterval(() => {
 			const winner = state.gameLoop(state);
 		if (!winner) {
-			client.emit('gameState', state.game_data);
+			this.server.to(this.clientRooms[client.id]).emit('gameState', state.game_data);
 		}
 		else
 		{
 			client.emit('gameOver');
 			clearInterval(intervalID);
+			this.state[gameCode] = null;
+			delete this.state[gameCode];
 			// console.log("client.emit('gameOver')");
 		}
 	}, 1000 / 60);

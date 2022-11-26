@@ -26,6 +26,8 @@ const app = new Vue({
       initialScreen: {},
       newGameBtn: {},
       joinGameBtn: {},
+      specGameBtn: {},
+      findGameBtn: {},
       returnGameBtn: {},
     };
   },
@@ -36,13 +38,26 @@ const app = new Vue({
       this.startAnimating(30);
     },
     joinGame() {
+      const code = JoinGameCodeInput.value;
       console.log('PLOP');
-      this.socket.emit('joinGame');
-      this.startAnimating(60);
+      this.socket.emit('joinGame', code);
+      this.startAnimating(30);
+    },
+    specGame() {
+      const code = SpecGameCodeInput.value;
+      console.log('Spec YEP');
+      this.socket.emit('specGame', code);
+      this.startAnimating(30);
+    },
+    findGame() {
+      this.socket.emit('findGame');
     },
     reset() {
       this.initialScreen.style.display = 'block';
       this.gameScreen.style.display = 'none';
+    },
+    test() {
+      console.log('test');
     },
     startAnimating(fps) {
       this.initialScreen.style.display = 'none';
@@ -71,6 +86,8 @@ const app = new Vue({
         // Put your drawing code here
         // this.getInfo();
         this.context.clearRect(0, 0, board.width, board.height);
+        this.context.fillStyle = '#6bed74';
+        this.context.fillRect(0, 0, this.board.width, this.board.height);
         this.background.draw(this.context);
         this.ball.update(this.context);
         this.paddle1.draw(this.context);
@@ -81,13 +98,11 @@ const app = new Vue({
       console.log('getInfoToClient');
       this.socket.emit('positionToServer', instruction);
     },
-    sendPaddle1Move(instruction) {
-      this.socket.emit('MovePaddle1ToServer', instruction);
-    },
-    sendPaddle2Move(instruction) {
-      this.socket.emit('MovePaddle2ToServer', instruction);
+    sendPaddleMove(instruction) {
+      this.socket.emit('MovePaddleToServer', instruction);
     },
     getInfo() {
+      console.log('getInfo');
       this.socket.emit('getInfoToServer');
     },
     getSizeToServe() {
@@ -100,21 +115,19 @@ const app = new Vue({
     window.addEventListener('keydown', (e) => {
       switch (e.key) {
         case 'ArrowUp':
-          this.sendPaddle1Move('up');
+          this.sendPaddleMove('up');
           break;
         case 'ArrowDown':
-          this.sendPaddle1Move('down');
-          break;
-        case 'e':
-          this.sendPaddle2Move('up');
-          break;
-        case 'd':
-          this.sendPaddle2Move('down');
+          this.sendPaddleMove('down');
           break;
         case ' ':
           console.log('this.ball.position.x', this.ball.position.x);
           console.log('this.ball.position.y', this.ball.position.y);
-          this.paddle1.updateScale();
+          console.log('this.paddle1.position.x', this.paddle1.width);
+          console.log('this.paddle1.position.y', this.paddle1.height);
+          console.log('this.paddle2.position.x', this.paddle2.width);
+          console.log('this.paddle2.position.y', this.paddle2.height);
+          this.getInfo();
           break;
       }
     });
@@ -124,13 +137,20 @@ const app = new Vue({
     this.initialScreen = document.getElementById('initialScreen');
     this.newGameBtn = document.getElementById('newGameBtn');
     this.joinGameBtn = document.getElementById('joinGameBtn');
+    this.specGameBtn = document.getElementById('specGameBtn');
+    this.findGameBtn = document.getElementById('findGameBtn');
     this.gameCodeDisplay = document.getElementById('gameCodeDisplay');
     this.returnGameBtn = document.getElementById('returnGameBtn');
 
     this.newGameBtn.addEventListener('click', this.newGame);
     this.joinGameBtn.addEventListener('click', this.joinGame);
+    this.specGameBtn.addEventListener('click', this.specGame);
+    this.findGameBtn.addEventListener('click', this.findGame);
     this.returnGameBtn.addEventListener('click', this.reset);
     // ----------------------------------------------
+    this.socket.on(`test`, (data) => {
+      this.test();
+    });
 
     this.socket.on(`gameData`, (data) => {
       this.canvas = data.canvas;
@@ -142,24 +162,18 @@ const app = new Vue({
     this.score1 = document.getElementById('score_1');
     this.score2 = document.getElementById('score_2');
     this.score2 = document.getElementById('score_2');
-
     this.board = document.getElementById('board');
+
     var heightRatio = 0.75;
     this.board.height = this.board.width * heightRatio;
     this.context = board.getContext('2d');
+
     this.socket.on(`paddle1ToClient`, (data) => {
       console.log('check');
     });
     this.socket.on(`getInfoToClient`, (data) => {
-      console.log('e');
       this.paddle1.position = data.paddle1.position;
-
-      //			 ------------------
-
       this.paddle2.position = data.paddle2.position;
-
-      //			 ------------------
-
       this.ball.position = data.ball.position;
     });
 
@@ -180,18 +194,28 @@ const app = new Vue({
     this.socket.on('getSizeToClient', (data) => {
       this.paddle1.width = data.paddle1.width;
       this.paddle1.height = data.paddle1.height;
-
-      this.paddle1.updateScale();
-
       this.paddle2.width = data.paddle2.width;
       this.paddle2.height = data.paddle2.height;
-
-      this.paddle2.updateScale();
-
       this.ball.width = data.ball.width;
       this.ball.height = data.ball.height;
 
+      this.paddle1.updateScale();
+      this.paddle2.updateScale();
       this.ball.updateScale();
+    });
+
+    this.socket.on('unknownGame', (data) => {
+      // this.returnGameBtn.style.display = 'block';
+      console.log('unknownGame');
+      this.reset();
+      // alert('you loose ?');
+    });
+
+    this.socket.on('fullGame', (data) => {
+      // this.returnGameBtn.style.display = 'block';
+      console.log('fullGame');
+      this.reset();
+      // alert('you loose ?');
     });
 
     this.background = new Sprite({
