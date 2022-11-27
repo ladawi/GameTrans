@@ -51,6 +51,7 @@ const app = new Vue({
     },
     findGame() {
       this.socket.emit('findGame');
+      this.startAnimating(30);
     },
     reset() {
       this.initialScreen.style.display = 'block';

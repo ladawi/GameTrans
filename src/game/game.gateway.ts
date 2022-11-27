@@ -33,6 +33,7 @@ export class GameGateway
 
 	state = {};
 	clientRooms = {};
+	openRooms: string[] = [];
 	io = require('socket.io')();
 	// -----------
 
@@ -75,6 +76,8 @@ export class GameGateway
 		client.join(roomName);
 		console.log('client.rooms.size', client.rooms);
 		client.emit('init', 1);
+		this.openRooms.push(roomName);
+		console.log(this.openRooms);
 	}
 
 	@SubscribeMessage('getSizeToServer')
@@ -128,16 +131,33 @@ export class GameGateway
 	@SubscribeMessage('findGame')
 	async handleFindGame(client: Socket): Promise<void>
 	{
-		let code = "";
-		console.log(this.clientRooms);
-		console.log("hello");
+		let gameCode = "";
+		console.log(this.openRooms);
+		if (!this.openRooms.length) {
+			console.log("void", this.openRooms.length);
+			this.handleNewGame(client);
+			return;
+		}
+		if (!this.openRooms[0]) {
+			client.emit("errFindGame");
+			return;
+		}
+		gameCode = this.openRooms[0];
+		this.clientRooms[client.id] = gameCode;
+		client.join(gameCode);
+		this.state[gameCode].game_data.idPlayers.player2 = client.id;
+		client.emit('gameCode', gameCode);
+		client.emit('init', 2);
+		this.openRooms.shift();
+		setTimeout(() => {
+			this.startGameInterval(client, this.state[gameCode], gameCode);
+		}, 500);
 	}
 
 	handleConnection(client: Socket, ...args: any[])
 	{
 		this.server.emit(`gameData`, this.gameService.game_data);
 		this.server.emit(`positionToClient`, this.gameService.game_data);
-		// this.startGameInterval(client, this.gameService);
 	}
 
 	afterInit(server: Server)
@@ -156,7 +176,6 @@ export class GameGateway
 			clearInterval(intervalID);
 			this.state[gameCode] = null;
 			delete this.state[gameCode];
-			// console.log("client.emit('gameOver')");
 		}
 	}, 1000 / 60);
 	}
