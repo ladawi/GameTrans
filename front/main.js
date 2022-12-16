@@ -37,12 +37,6 @@ const app = new Vue({
       this.socket.emit('newGame');
       this.startAnimating(30);
     },
-    joinGame() {
-      const code = JoinGameCodeInput.value;
-      console.log('PLOP');
-      this.socket.emit('joinGame', code);
-      this.startAnimating(30);
-    },
     specGame() {
       const code = SpecGameCodeInput.value;
       console.log('Spec YEP');
@@ -56,6 +50,7 @@ const app = new Vue({
     reset() {
       this.initialScreen.style.display = 'block';
       this.gameScreen.style.display = 'none';
+      this.socket.emit('leaveGame');
     },
     test() {
       console.log('test');
@@ -71,6 +66,10 @@ const app = new Vue({
       this.getSizeToServe();
       this.paddle1.updateScale();
 
+      this.background.imageSrc = './assets/SpaceBackground.png';
+      this.background.update(this.context);
+      console.log('this.context', this.context);
+      console.log('this.background.imageSrc', this.background.imageSrc);
       this.game();
     },
     game() {
@@ -136,16 +135,14 @@ const app = new Vue({
   mounted() {
     this.gameScreen = document.getElementById('gameScreen');
     this.initialScreen = document.getElementById('initialScreen');
-    this.newGameBtn = document.getElementById('newGameBtn');
-    this.joinGameBtn = document.getElementById('joinGameBtn');
-    this.specGameBtn = document.getElementById('specGameBtn');
+    // this.newGameBtn = document.getElementById('newGameBtn');
+    // this.specGameBtn = document.getElementById('specGameBtn');
     this.findGameBtn = document.getElementById('findGameBtn');
     this.gameCodeDisplay = document.getElementById('gameCodeDisplay');
     this.returnGameBtn = document.getElementById('returnGameBtn');
 
-    this.newGameBtn.addEventListener('click', this.newGame);
-    this.joinGameBtn.addEventListener('click', this.joinGame);
-    this.specGameBtn.addEventListener('click', this.specGame);
+    // this.newGameBtn.addEventListener('click', this.newGame);
+    // this.specGameBtn.addEventListener('click', this.specGame);
     this.findGameBtn.addEventListener('click', this.findGame);
     this.returnGameBtn.addEventListener('click', this.reset);
     // ----------------------------------------------
@@ -187,8 +184,8 @@ const app = new Vue({
     });
 
     this.socket.on('gameOver', (data) => {
-      this.returnGameBtn.style.display = 'block';
-      // this.reset();
+      console.log('gameOver');
+      this.reset();
       // alert('you loose ?');
     });
 

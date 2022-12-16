@@ -37,7 +37,9 @@ class Sprite {
       x: this.position.x + this.width / 2,
       y: this.position.y + this.height / 2,
     };
-    if (ctx != 0) this.draw(ctx);
+    if (ctx != 0) {
+      this.draw(ctx);
+    }
   }
 
   draw(ctx) {
